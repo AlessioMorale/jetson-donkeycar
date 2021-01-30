@@ -67,13 +67,21 @@ RUN apt-get update && \
 RUN wget https://nvidia.box.com/shared/static/wa34qwrwtk9njtyarwt5nvo6imenfy26.whl -O torch-1.7.0-cp36-cp36m-linux_aarch64.whl && \
     pip3 install ./torch-1.7.0-cp36-cp36m-linux_aarch64.whl && \
     rm  ./torch-1.7.0-cp36-cp36m-linux_aarch64.whl
-RUN ls /usr/local/cuda
-RUN mkdir -p ~/projects; cd ~/projects && \
-    git clone --branch v0.8.1 https://github.com/pytorch/vision torchvision && \
-    cd torchvision && \
-    export BUILD_VERSION=0.8.1 && \
-    python3 setup.py install
+
+RUN export BUILD_VERSION=0.8.1 && \
+    export FORCE_CUDA=1 && \
+    export TORCH_CUDA_ARCH_LIST="5.3" && \
+    pip install -U --no-cache-dir git+https://github.com/pytorch/vision@v0.8.1
+
 RUN pip3 install -U --no-cache-dir virtualenv
+
+RUN apt-get update && \
+    apt-get install \
+    tensorrt \
+    -y --no-install-recommends && \
+    apt-get clean autoclean -y
+
+RUN pip3 install -U --no-cache-dir pycuda
 
 RUN mkdir -p /projects; cd /projects
 WORKDIR /projects
